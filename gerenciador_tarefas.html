@@ -1,432 +1,443 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Tarefas</title>
+    <title>Gerenciamento de Tarefas de Funcionários</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f4f4f9, #e8f4f8);
+            background-color: #f4f4f9;
             color: #333;
-            margin: 0;
+            line-height: 1.6;
             padding: 20px;
-            min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         .container {
-            max-width: 900px;
-            margin: 0 auto;
             background: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .hidden {
-            display: none !important;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         h1, h2 {
             color: #2c3e50;
             margin-bottom: 20px;
         }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        form {
+            display: grid;
+            gap: 15px;
+            max-width: 600px;
             margin-bottom: 30px;
-            border-bottom: 2px solid #ecf0f1;
-            padding-bottom: 20px;
+        }
+        input, select {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
         button {
             background: #3498db;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
+            padding: 12px 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: background 0.3s;
         }
         button:hover {
             background: #2980b9;
-            transform: translateY(-1px);
         }
-        input, select {
-            padding: 12px;
-            border: 1px solid #bdc3c7;
-            border-radius: 6px;
-            font-size: 16px;
-            width: 100%;
-            max-width: 300px;
-            box-sizing: border-box;
-            margin: 10px 0;
-        }
-        section {
-            margin-bottom: 40px;
-            padding: 20px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
-        .form-row {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background: #fafafa;
-            transition: box-shadow 0.3s;
-        }
-        .task-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .task-info {
-            flex: 1;
-        }
-        .task-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .task-actions button {
-            padding: 10px 16px;
-            font-size: 14px;
+        button.danger {
             background: #e74c3c;
         }
-        .task-actions button:hover {
+        button.danger:hover {
             background: #c0392b;
         }
-        .status {
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #34495e;
+            color: white;
+        }
+        .task-item button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        #loginError {
+            color: #e74c3c;
+            margin-top: 10px;
+        }
+        #availableEmployees {
+            margin-top: 10px;
             font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 4px;
         }
-        .status.pending {
-            color: #e67e22;
-            background: #fdf2e9;
-        }
-        .status.completed {
-            color: #27ae60;
-            background: #eafaf1;
-        }
-        #login-container {
-            text-align: center;
-            max-width: 400px;
-            margin: 100px auto;
-        }
-        #login-container input {
-            max-width: 350px;
-            display: inline-block;
+        .logout {
+            background: #95a5a6;
             margin-bottom: 20px;
         }
-        #login-container button {
-            width: 200px;
-            padding: 15px;
-            font-size: 18px;
+        .logout:hover {
+            background: #7f8c8d;
+        }
+        .section {
+            margin-bottom: 40px;
         }
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 20px; margin: 10px; }
-            .task-item { flex-direction: column; align-items: stretch; gap: 15px; }
-            .task-actions { justify-content: flex-start; }
-            .form-row { flex-direction: column; }
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 20px;
+            }
+            form {
+                grid-template-columns: 1fr;
+            }
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="login-container" class="container">
-        <h1>Gerenciador de Tarefas</h1>
-        <input type="text" id="loginInput" placeholder="Digite seu nome" autocomplete="off">
-        <button onclick="login()">Entrar</button>
-    </div>
+    <div class="container">
+        <!-- Login Page -->
+        <div id="loginPage">
+            <h1>Gerenciamento de Tarefas</h1>
+            <p>Faça login com seu nome (Admin ou Funcionário)</p>
+            <input type="text" id="loginInput" placeholder="Nome do funcionário" style="width: 300px; max-width: 100%;">
+            <br>
+            <button onclick="login()" style="margin-top: 20px;">Entrar</button>
+            <div id="loginError"></div>
+            <div id="availableEmployees"></div>
+        </div>
 
-    <div id="admin-container" class="container hidden">
-        <header>
-            <h1>Dashboard Admin - <span id="currentUserAdmin"></span></h1>
-            <button onclick="logout()">Sair</button>
-        </header>
+        <!-- Admin Dashboard -->
+        <div id="adminDash" style="display: none;">
+            <button class="logout" onclick="logout()">Sair</button>
+            <h1>Dashboard Admin</h1>
 
-        <section>
-            <h2>Adicionar Funcionário</h2>
-            <div class="form-row">
-                <input type="text" id="newEmpName" placeholder="Nome do funcionário">
-                <select id="newEmpRole">
-                    <option value="employee">Funcionário</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button onclick="addEmployee()" style="max-width: none;">Adicionar</button>
+            <div class="section">
+                <h2>Adicionar Novo Funcionário</h2>
+                <input type="text" id="newEmpInput" placeholder="Nome do funcionário">
+                <button onclick="addEmployee()">Adicionar Funcionário</button>
             </div>
-        </section>
 
-        <section>
-            <h2 id="taskFormTitle">Nova Tarefa</h2>
-            <input type="hidden" id="editTaskId">
-            <div class="form-row">
-                <input type="text" id="taskDesc" placeholder="Descrição da tarefa">
-                <input type="date" id="taskDeadline">
+            <div class="section">
+                <h2>Lista de Funcionários</h2>
+                <ul id="empList" style="list-style: none;"></ul>
             </div>
-            <div class="form-row">
-                <select id="taskAssigned">
-                    <option value="">Selecione funcionário</option>
-                </select>
-                <button onclick="saveTask()">Salvar Tarefa</button>
-                <button onclick="cancelEdit()" style="background: #95a5a6;">Cancelar</button>
+
+            <div class="section">
+                <h2>Gerenciar Tarefas</h2>
+                <form id="taskForm">
+                    <input type="text" id="taskDesc" placeholder="Descrição da tarefa">
+                    <input type="date" id="taskDue">
+                    <select id="taskResp">
+                        <option value="">Selecione funcionário</option>
+                    </select>
+                    <select id="taskStatus">
+                        <option value="pending">Pendente</option>
+                        <option value="completed">Concluída</option>
+                    </select>
+                    <button type="button" onclick="saveTask()">Adicionar Tarefa</button>
+                </form>
             </div>
-        </section>
 
-        <section>
-            <h2>Todas as Tarefas</h2>
-            <ul id="tasksList" style="list-style: none; padding: 0;"></ul>
-        </section>
-    </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Data Limite</th>
+                        <th>Responsável</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="taskTbody"></tbody>
+            </table>
+        </div>
 
-    <div id="employee-container" class="container hidden">
-        <header>
-            <h1>Dashboard Funcionário - <span id="currentUserEmp"></span></h1>
-            <button onclick="logout()">Sair</button>
-        </header>
-
-        <section>
-            <h2>Minhas Tarefas</h2>
-            <ul id="empTasksList" style="list-style: none; padding: 0;"></ul>
-        </section>
+        <!-- Employee Dashboard -->
+        <div id="empDash" style="display: none;">
+            <button class="logout" onclick="logout()">Sair</button>
+            <h1>Dashboard Funcionário: <span id="userName"></span></h1>
+            <div class="section">
+                <h2>Suas Tarefas</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Descrição</th>
+                            <th>Data Limite</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myTaskTbody"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        let employees = [];
-        let tasks = [];
         let currentUser = '';
         let isAdmin = false;
+        let editTaskId = null;
 
-        function init() {
-            loadData();
-            if (!employees.length) {
-                employees = [{ name: 'Admin', role: 'admin' }];
-                saveData();
-            }
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                const emp = employees.find(e => e.name.toLowerCase() === savedUser.toLowerCase());
-                if (emp) {
-                    currentUser = emp.name;
-                    isAdmin = emp.role === 'admin';
-                    showDashboard();
-                    return;
-                }
-            }
-            showLogin();
+        function getEmployees() {
+            return JSON.parse(localStorage.getItem('employees') || '[]');
         }
 
-        function loadData() {
-            const empStr = localStorage.getItem('employees');
-            if (empStr) employees = JSON.parse(empStr);
-            const tasksStr = localStorage.getItem('tasks');
-            if (tasksStr) tasks = JSON.parse(tasksStr);
+        function saveEmployees(emps) {
+            localStorage.setItem('employees', JSON.stringify(emps));
         }
 
-        function saveData() {
-            localStorage.setItem('employees', JSON.stringify(employees));
+        function getTasks() {
+            return JSON.parse(localStorage.getItem('tasks') || '[]');
+        }
+
+        function saveTasks(tasks) {
             localStorage.setItem('tasks', JSON.stringify(tasks));
         }
 
-        function showLogin() {
-            document.getElementById('login-container').classList.remove('hidden');
-            document.getElementById('admin-container').classList.add('hidden');
-            document.getElementById('employee-container').classList.add('hidden');
+        function initData() {
+            if (getEmployees().length === 0) {
+                let demoEmps = ['João Silva', 'Maria Santos'];
+                saveEmployees(demoEmps);
+            }
         }
 
         function login() {
-            const name = document.getElementById('loginInput').value.trim();
-            if (!name) {
-                alert('Nome é obrigatório!');
+            let name = document.getElementById('loginInput').value.trim();
+            let lowerName = name.toLowerCase();
+            let errorDiv = document.getElementById('loginError');
+            let availDiv = document.getElementById('availableEmployees');
+            errorDiv.innerHTML = '';
+            availDiv.innerHTML = '';
+
+            if (lowerName === 'admin') {
+                currentUser = 'Admin';
+                isAdmin = true;
+                showAdmin();
                 return;
             }
-            const emp = employees.find(e => e.name.toLowerCase() === name.toLowerCase());
-            if (!emp) {
-                alert('Funcionário não encontrado. Peça ao administrador para cadastrá-lo.');
+
+            let emps = getEmployees();
+            let lowerEmps = emps.map(e => e.toLowerCase());
+            let foundEmp = emps.find(e => e.toLowerCase() === lowerName);
+            if (foundEmp) {
+                currentUser = foundEmp;
+                isAdmin = false;
+                showEmp();
                 return;
             }
-            currentUser = emp.name;
-            isAdmin = emp.role === 'admin';
-            localStorage.setItem('currentUser', currentUser);
-            showDashboard();
+
+            // Error
+            errorDiv.innerHTML = 'Funcionário não existe.';
+            if (emps.length > 0) {
+                availDiv.innerHTML = '<strong>Funcionários disponíveis:</strong> ' + emps.join(', ');
+            } else {
+                availDiv.innerHTML = '<strong>Nenhum funcionário cadastrado. Use &quot;Admin&quot; para cadastrar.</strong>';
+            }
         }
 
-        function showDashboard() {
-            document.getElementById('login-container').classList.add('hidden');
-            document.getElementById('currentUserAdmin').textContent = currentUser;
-            document.getElementById('currentUserEmp').textContent = currentUser;
-            if (isAdmin) {
-                document.getElementById('admin-container').classList.remove('hidden');
-                document.getElementById('employee-container').classList.add('hidden');
-                populateEmployeeSelect();
-                renderTasks();
-            } else {
-                document.getElementById('admin-container').classList.add('hidden');
-                document.getElementById('employee-container').classList.remove('hidden');
-                renderEmpTasks();
-            }
+        function showLogin() {
+            document.getElementById('loginPage').style.display = 'block';
+            document.getElementById('adminDash').style.display = 'none';
+            document.getElementById('empDash').style.display = 'none';
+        }
+
+        function showAdmin() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminDash').style.display = 'block';
+            document.getElementById('empDash').style.display = 'none';
+            updateEmpList();
+            updateTaskRespSelect();
+            updateTaskList();
+            editTaskId = null;
+            clearTaskForm();
+        }
+
+        function showEmp() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('adminDash').style.display = 'none';
+            document.getElementById('empDash').style.display = 'block';
+            document.getElementById('userName').textContent = currentUser;
+            updateMyTaskList();
         }
 
         function logout() {
-            localStorage.removeItem('currentUser');
             currentUser = '';
-            isAdmin = false;
-            document.getElementById('loginInput').value = '';
             showLogin();
+            document.getElementById('loginInput').value = '';
         }
 
         function addEmployee() {
-            const name = document.getElementById('newEmpName').value.trim();
-            const role = document.getElementById('newEmpRole').value;
+            let name = document.getElementById('newEmpInput').value.trim();
             if (!name) {
-                alert('Nome é obrigatório!');
+                alert('Nome é obrigatório');
                 return;
             }
-            if (employees.find(e => e.name.toLowerCase() === name.toLowerCase())) {
-                alert('Funcionário já existe!');
+            let emps = getEmployees();
+            if (emps.some(e => e.toLowerCase() === name.toLowerCase())) {
+                alert('Funcionário já existe');
                 return;
             }
-            employees.push({ name, role });
-            saveData();
-            document.getElementById('newEmpName').value = '';
-            document.getElementById('newEmpRole').value = 'employee';
-            populateEmployeeSelect();
-            alert('Funcionário adicionado com sucesso!');
+            emps.push(name);
+            saveEmployees(emps);
+            updateEmpList();
+            updateTaskRespSelect();
+            document.getElementById('newEmpInput').value = '';
         }
 
-        function populateEmployeeSelect() {
-            const select = document.getElementById('taskAssigned');
-            select.innerHTML = '<option value="">Selecione funcionário</option>';
-            employees.forEach(emp => {
-                const opt = document.createElement('option');
-                opt.value = emp.name;
-                opt.textContent = `${emp.name} ${emp.role === 'admin' ? '(Admin)' : ''}`;
-                select.appendChild(opt);
-            });
+        function updateEmpList() {
+            let emps = getEmployees();
+            document.getElementById('empList').innerHTML = emps.map(e => `<li>${e}</li>`).join('');
         }
 
-        function saveTask() {
-            const id = document.getElementById('editTaskId').value;
-            const desc = document.getElementById('taskDesc').value.trim();
-            const deadline = document.getElementById('taskDeadline').value;
-            const assigned = document.getElementById('taskAssigned').value;
-            if (!desc || !deadline || !assigned) {
-                alert('Preencha todos os campos!');
-                return;
-            }
-            if (id) {
-                const task = tasks.find(t => t.id === id);
-                if (task) {
-                    task.description = desc;
-                    task.deadline = deadline;
-                    task.assignedTo = assigned;
-                }
-            } else {
-                const newTask = {
-                    id: Date.now().toString(),
-                    description: desc,
-                    deadline,
-                    assignedTo: assigned,
-                    status: 'pending'
-                };
-                tasks.push(newTask);
-            }
-            saveData();
-            clearTaskForm();
-            renderTasks();
-            alert(id ? 'Tarefa atualizada!' : 'Tarefa adicionada!');
+        function updateTaskRespSelect() {
+            let emps = getEmployees();
+            let sel = document.getElementById('taskResp');
+            sel.innerHTML = '<option value="">Selecione funcionário</option>' + emps.map(e => `<option value="${e}">${e}</option>`).join('');
         }
 
         function clearTaskForm() {
-            document.getElementById('editTaskId').value = '';
             document.getElementById('taskDesc').value = '';
-            document.getElementById('taskDeadline').value = '';
-            document.getElementById('taskAssigned').value = '';
-            document.getElementById('taskFormTitle').textContent = 'Nova Tarefa';
+            document.getElementById('taskDue').value = '';
+            document.getElementById('taskResp').value = '';
+            document.getElementById('taskStatus').value = 'pending';
+            document.querySelector('#taskForm button').textContent = 'Adicionar Tarefa';
         }
 
-        function cancelEdit() {
-            clearTaskForm();
+        function saveTask() {
+            let desc = document.getElementById('taskDesc').value.trim();
+            let due = document.getElementById('taskDue').value;
+            let resp = document.getElementById('taskResp').value;
+            let status = document.getElementById('taskStatus').value;
+            if (!desc || !due || !resp) {
+                alert('Preencha todos os campos obrigatórios');
+                return;
+            }
+            if (editTaskId !== null) {
+                updateTask(editTaskId, desc, due, resp, status);
+                editTaskId = null;
+                clearTaskForm();
+            } else {
+                let tasks = getTasks();
+                let id = Date.now();
+                tasks.push({ id, desc, dueDate: due, responsible: resp, status });
+                saveTasks(tasks);
+                updateTaskList();
+                clearTaskForm();
+            }
         }
 
         function editTask(id) {
-            const task = tasks.find(t => t.id === id);
-            if (!task) return;
-            document.getElementById('editTaskId').value = id;
-            document.getElementById('taskDesc').value = task.description;
-            document.getElementById('taskDeadline').value = task.deadline;
-            document.getElementById('taskAssigned').value = task.assignedTo;
-            document.getElementById('taskFormTitle').textContent = 'Editar Tarefa';
+            let task = getTasks().find(t => t.id === id);
+            if (task) {
+                document.getElementById('taskDesc').value = task.desc;
+                document.getElementById('taskDue').value = task.dueDate;
+                document.getElementById('taskResp').value = task.responsible;
+                document.getElementById('taskStatus').value = task.status;
+                document.querySelector('#taskForm button').textContent = 'Atualizar Tarefa';
+                editTaskId = id;
+            }
+        }
+
+        function updateTask(id, desc, due, resp, status) {
+            let tasks = getTasks();
+            let task = tasks.find(t => t.id === id);
+            if (task) {
+                task.desc = desc;
+                task.dueDate = due;
+                task.responsible = resp;
+                task.status = status;
+                saveTasks(tasks);
+                updateTaskList();
+            }
         }
 
         function deleteTask(id) {
-            if (confirm('Confirma a exclusão desta tarefa?')) {
-                tasks = tasks.filter(t => t.id !== id);
-                saveData();
-                renderTasks();
+            if (confirm('Tem certeza que deseja deletar esta tarefa?')) {
+                let tasks = getTasks();
+                let idx = tasks.findIndex(t => t.id === id);
+                if (idx > -1) {
+                    tasks.splice(idx, 1);
+                    saveTasks(tasks);
+                    updateTaskList();
+                }
             }
         }
 
-        function renderTasks() {
-            const ul = document.getElementById('tasksList');
-            ul.innerHTML = '';
-            tasks.forEach(task => {
-                const li = document.createElement('li');
-                li.className = 'task-item';
-                li.innerHTML = `
-                    <div class="task-info">
-                        <strong>${task.description}</strong><br>
-                        Data limite: ${new Date(task.deadline).toLocaleDateString('pt-BR')}<br>
-                        Responsável: ${task.assignedTo}<br>
-                        Status: <span class="status ${task.status}">${task.status === 'pending' ? 'Pendente' : 'Concluída'}</span>
-                    </div>
-                    <div class="task-actions">
-                        <button onclick="editTask('${task.id}')">Editar</button>
-                        <button onclick="deleteTask('${task.id}')">Deletar</button>
-                    </div>
-                `;
-                ul.appendChild(li);
-            });
+        function updateTaskList() {
+            let tasks = getTasks();
+            // Sort by due date
+            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            let tbody = document.getElementById('taskTbody');
+            tbody.innerHTML = tasks.map(t => `
+                <tr>
+                    <td>${t.desc}</td>
+                    <td>${t.dueDate}</td>
+                    <td>${t.responsible}</td>
+                    <td>${t.status === 'pending' ? 'Pendente' : 'Concluída'}</td>
+                    <td>
+                        <button onclick="editTask(${t.id})">Editar</button>
+                        <button class="danger" onclick="deleteTask(${t.id})">Deletar</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
-        function renderEmpTasks() {
-            const ul = document.getElementById('empTasksList');
-            ul.innerHTML = '';
-            const myTasks = tasks.filter(t => t.assignedTo === currentUser);
-            myTasks.forEach(task => {
-                const li = document.createElement('li');
-                li.className = 'task-item';
-                const isCompleted = task.status === 'completed';
-                li.innerHTML = `
-                    <div class="task-info">
-                        <strong>${task.description}</strong><br>
-                        Data limite: ${new Date(task.deadline).toLocaleDateString('pt-BR')}<br>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleTask('${task.id}', this.checked)">
-                            <span>Concluída</span>
-                        </label>
-                    </div>
-                `;
-                ul.appendChild(li);
-            });
+        function updateMyTaskList() {
+            let tasks = getTasks().filter(t => t.responsible.toLowerCase() === currentUser.toLowerCase());
+            // Sort by due date
+            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            let tbody = document.getElementById('myTaskTbody');
+            tbody.innerHTML = tasks.map(t => `
+                <tr>
+                    <td>${t.desc}</td>
+                    <td>${t.dueDate}</td>
+                    <td>${t.status === 'pending' ? `<button onclick="completeTask(${t.id})">Marcar como Concluída</button>` : 'Concluída'}</td>
+                </tr>
+            `).join('');
         }
 
-        function toggleTask(id, completed) {
-            const task = tasks.find(t => t.id === id);
-            if (task) {
-                task.status = completed ? 'completed' : 'pending';
-                saveData();
-                renderEmpTasks();
+        function completeTask(id) {
+            let tasks = getTasks();
+            let task = tasks.find(t => t.id === id);
+            if (task && task.status === 'pending') {
+                task.status = 'completed';
+                saveTasks(tasks);
+                updateMyTaskList();
             }
         }
 
-        window.addEventListener('load', init);
+        // Enter key on login
+        document.addEventListener('DOMContentLoaded', function() {
+            initData();
+            showLogin();
+            document.getElementById('loginInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+        });
     </script>
 </body>
 </html>
